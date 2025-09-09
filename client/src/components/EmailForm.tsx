@@ -1,13 +1,14 @@
+// app/email/page.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import emailjs from "@emailjs/browser";
 import { useSearchParams } from "next/navigation";
 import { PaperAirplaneIcon, EnvelopeIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 import { sendEmail as logEmail } from "../lib/api"; 
 
-export default function EmailForm() {
+function EmailFormContent() {
   const [form, setForm] = useState({ to: "", subject: "", body: "" });
   const [status, setStatus] = useState<{ type: "idle" | "loading" | "success" | "error"; message: string }>({ 
     type: "idle", 
@@ -340,5 +341,50 @@ export default function EmailForm() {
           )}
         </motion.button>
       </motion.form>
+  );
+}
+
+// Loading component for Suspense fallback
+function EmailFormLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="bg-white shadow-2xl rounded-2xl p-8 max-w-2xl w-full border border-gray-100">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse"></div>
+          <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto mb-2 animate-pulse"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto animate-pulse"></div>
+        </div>
+        
+        <div className="space-y-6 mt-6">
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+            <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+            <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+            <div className="h-32 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          
+          <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function EmailForm() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 flex items-center justify-center">
+      <Suspense fallback={<EmailFormLoading />}>
+        <EmailFormContent />
+      </Suspense>
+    </div>
   );
 }
