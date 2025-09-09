@@ -54,7 +54,7 @@ function splitToParagraphs(text) {
       .filter((p) => p.length > 0);
   } catch (err) {
     console.error("[splitToParagraphs] Error splitting text:", err.message);
-    return [text]; // fallback: return entire text as one paragraph
+    return [text]; 
   }
 }
 
