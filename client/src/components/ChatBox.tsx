@@ -275,7 +275,7 @@ const loadingDotVariants = {
           >
             {messages.map((msg, i) => (
               <motion.div
-                key={i}
+                key={`${msg.timestamp.getTime()}-${i}`}
                 layout
                 variants={messageVariants}
                 initial="hidden"

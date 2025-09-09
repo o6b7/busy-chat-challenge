@@ -45,11 +45,7 @@ export async function uploadResume(req, res, next) {
   }
 }
 
-
-
-/**
- * getResumeInfo - returns latest uploaded resume meta
- */
+// getResumeInfo - returns latest uploaded resume meta
 export async function getResumeInfo(req, res, next) {
   try {
     const doc = await Resume.findOne().sort({ uploadedAt: -1 }).lean();
@@ -82,6 +78,22 @@ export async function listResumes(req, res, next) {
         email: doc.email || null,
       }))
     );
+  } catch (err) {
+    next(err);
+  }
+}
+
+// DELETE /api/resume/:id
+export async function deleteResume(req, res, next) {
+  try {
+    const { id } = req.params;
+    const deleted = await Resume.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({ error: "Resume not found" });
+    }
+
+    res.json({ message: "Resume deleted successfully", resumeId: id });
   } catch (err) {
     next(err);
   }

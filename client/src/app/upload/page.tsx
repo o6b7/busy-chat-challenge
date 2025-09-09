@@ -1,9 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { uploadResumeFile } from "../../lib/api";
-import { DocumentArrowUpIcon, CloudArrowUpIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { uploadResumeFile, listResumes, deleteResume } from "../../lib/api";
+import { 
+  DocumentArrowUpIcon, 
+  CloudArrowUpIcon, 
+  XMarkIcon, 
+  TrashIcon,
+  DocumentTextIcon,
+  CalendarIcon,
+  UserIcon
+} from "@heroicons/react/24/outline";
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -12,6 +20,23 @@ export default function UploadPage() {
     message: "" 
   });
   const [dragOver, setDragOver] = useState(false);
+  const [resumes, setResumes] = useState<any[]>([]);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadResumes();
+  }, []);
+
+  const loadResumes = async () => {
+    try {
+      const data = await listResumes();
+      setResumes(data);
+    } catch (err) {
+      console.error("Failed to load resumes:", err);
+      setStatus({ type: "error", message: "Failed to load resumes" });
+    }
+  };
 
   const handleUpload = async () => {
     if (!file) {
@@ -24,9 +49,25 @@ export default function UploadPage() {
       const res = await uploadResumeFile(file);
       setStatus({ type: "success", message: `✅ Successfully uploaded: ${res.originalName}` });
       setFile(null);
+      await loadResumes(); // Refresh the list
     } catch (err) {
       console.error(err);
       setStatus({ type: "error", message: "❌ Upload failed. Please try again." });
+    }
+  };
+
+  const handleDeleteResume = async (resumeId: string) => {
+    setIsDeleting(resumeId);
+    try {
+      await deleteResume(resumeId);
+      setStatus({ type: "success", message: "✅ Resume deleted successfully" });
+      await loadResumes(); // Refresh the list
+    } catch (err) {
+      console.error("Failed to delete resume:", err);
+      setStatus({ type: "error", message: "❌ Failed to delete resume" });
+    } finally {
+      setIsDeleting(null);
+      setShowDeleteModal(null);
     }
   };
 
@@ -61,13 +102,32 @@ export default function UploadPage() {
     }
   };
 
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-2xl mx-auto"
+        className="max-w-4xl mx-auto"
       >
         {/* Header */}
         <motion.div 
@@ -166,7 +226,7 @@ export default function UploadPage() {
                   <div>
                     <p className="font-medium text-gray-900">{file.name}</p>
                     <p className="text-sm text-gray-600">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                      {formatFileSize(file.size)}
                     </p>
                   </div>
                 </div>
@@ -249,11 +309,78 @@ export default function UploadPage() {
           )}
         </AnimatePresence>
 
+        {/* Resume List */}
+        {resumes.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mt-8"
+          >
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+              <DocumentTextIcon className="w-5 h-5 mr-2 text-blue-600" />
+              Uploaded Resumes
+            </h2>
+            
+            <div className="grid gap-4 max-h-96 overflow-y-auto p-1">
+              {resumes.map((resume) => (
+                <motion.div
+                  key={resume.resumeId}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3 min-w-0 flex-1">
+                      <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <DocumentTextIcon className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-medium text-gray-900 truncate">{resume.originalName}</h3>
+                        <div className="flex flex-wrap items-center gap-x-4 text-sm text-gray-500 mt-1">
+                          <div className="flex items-center">
+                            <UserIcon className="w-4 h-4 mr-1 flex-shrink-0" />
+                            <span className="truncate">{resume.candidateName || "Unknown"}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <CalendarIcon className="w-4 h-4 mr-1 flex-shrink-0" />
+                            <span className="truncate">{formatDate(resume.uploadedAt)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowDeleteModal(resume.resumeId)}
+                      disabled={isDeleting === resume.resumeId}
+                      className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 flex-shrink-0 ml-2"
+                      title="Delete resume"
+                    >
+                      {isDeleting === resume.resumeId ? (
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full"
+                        />
+                      ) : (
+                        <TrashIcon className="w-5 h-5" />
+                      )}
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {/* Help Text */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
           className="mt-8 p-6 bg-white rounded-2xl shadow-sm border border-gray-200"
         >
           <h3 className="font-semibold text-gray-900 mb-3">💡 Upload Tips</h3>
@@ -261,26 +388,90 @@ export default function UploadPage() {
             <motion.li 
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.5 }}
+              transition={{ duration: 0.3, delay: 0.6 }}
             >• Ensure the resume is in PDF or DOCX format</motion.li>
             <motion.li 
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.6 }}
+              transition={{ duration: 0.3, delay: 0.7 }}
             >• Maximum file size: 10MB</motion.li>
             <motion.li 
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.7 }}
+              transition={{ duration: 0.3, delay: 0.8 }}
             >• For best results, use resumes with clear formatting</motion.li>
             <motion.li 
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.8 }}
+              transition={{ duration: 0.3, delay: 0.9 }}
             >• The AI will automatically parse and analyze the content</motion.li>
           </ul>
         </motion.div>
       </motion.div>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <TrashIcon className="w-5 h-5 text-red-500 mr-2" />
+                  Confirm Delete
+                </h3>
+                <button
+                  onClick={() => setShowDeleteModal(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                  disabled={isDeleting !== null}
+                >
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete the resume "{resumes.find(r => r.resumeId === showDeleteModal)?.originalName}"? 
+                This action cannot be undone.
+              </p>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowDeleteModal(null)}
+                  className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                  disabled={isDeleting !== null}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleDeleteResume(showDeleteModal)}
+                  className="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 disabled:opacity-50"
+                  disabled={isDeleting !== null}
+                >
+                  {isDeleting ? (
+                    <>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                      />
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <TrashIcon className="w-4 h-4" />
+                      <span>Delete</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

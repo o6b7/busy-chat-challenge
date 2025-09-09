@@ -105,3 +105,12 @@ export async function checkApiHealth(): Promise<boolean> {
     return false;
   }
 }
+
+export async function deleteResume(resumeId: string) {
+  const res = await fetch(`${BASE_URL}/resume/${resumeId}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) throw new Error("Failed to delete resume");
+  return res.json();
+}

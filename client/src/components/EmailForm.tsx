@@ -288,7 +288,7 @@ export default function EmailForm() {
               initial="hidden"
               animate="visible"
               exit="hidden"
-              key={status.message}
+              // key={status.message}
             >
               <p className="text-sm font-medium flex items-center">
                 {status.type === "loading" && (
