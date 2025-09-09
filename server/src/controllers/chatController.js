@@ -89,9 +89,12 @@ export async function chatWithResume(req, res, next) {
           messages: [
             {
               role: "system",
-              content: `You are a resume analysis assistant. Analyze the following resume sections and answer the question based on the content. 
-              Be COMPREHENSIVE and mention ALL relevant technologies, languages, and skills you find. 
-              If you're asked about programming languages and frameworks, list ALL languages mentioned anywhere in the resume.`
+              content: `You are a resume analysis assistant. Always respond in a **clear, structured, and well-organized format** using:
+        - Headings (### ...)
+        - Bullet points (- ...)
+        - Sub-sections when listing skills, experiences, or technologies
+
+        Do not write a single long paragraph. Ensure the answer is **easy to scan** and well formatted.`
             },
             {
               role: "user",
@@ -106,6 +109,7 @@ export async function chatWithResume(req, res, next) {
           max_tokens: 300,
           temperature: 0.3
         });
+
 
         answer = completion.choices[0].message.content;
       } catch (openaiError) {
