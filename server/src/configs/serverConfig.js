@@ -9,10 +9,6 @@ const schema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
   MONGO_URI: Joi.string().uri().required(),
   MAX_FILE_SIZE: Joi.number().default(5 * 1024 * 1024),
-  SMTP_HOST: Joi.string().required(),
-  SMTP_PORT: Joi.number().default(587),
-  SMTP_USER: Joi.string().required(),
-  SMTP_PASS: Joi.string().required(),
   OPENAI_API_KEY: Joi.string().optional()
 }).unknown(true);
 
