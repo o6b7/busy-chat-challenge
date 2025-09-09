@@ -10,13 +10,23 @@ interface Message {
   role: string;
   text: string;
   timestamp: Date;
+  id: string;
+}
+
+// Add this interface for Resume type
+interface Resume {
+  resumeId: string;
+  originalName: string;
+  uploadedAt: string;
+  email?: string;
+  parsedText?: string;
 }
 
 export default function ChatBox() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [resumes, setResumes] = useState<any[]>([]);
-  const [selectedResume, setSelectedResume] = useState<any>(null);
+  const [resumes, setResumes] = useState<Resume[]>([]);
+  const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -42,6 +52,10 @@ export default function ChatBox() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const generateId = () => {
+    return Math.random().toString(36).substring(2, 9) + Date.now();
+  };
+
   const handleSend = async () => {
     if (!input.trim() || !selectedResume || isLoading) return;
 
@@ -49,6 +63,7 @@ export default function ChatBox() {
       role: "user",
       text: input.trim(),
       timestamp: new Date(),
+      id: generateId()
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -61,6 +76,7 @@ export default function ChatBox() {
         role: "mcp",
         text: response.answer,
         timestamp: new Date(),
+        id: generateId()
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
@@ -69,6 +85,7 @@ export default function ChatBox() {
         role: "mcp",
         text: "Sorry, I encountered an error while processing your request. Please try again.",
         timestamp: new Date(),
+        id: generateId()
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -146,18 +163,18 @@ export default function ChatBox() {
     }
   };
 
-const loadingDotVariants = {
-  initial: { y: 0 },
-  animate: {
-    y: -8,
-    transition: {
-      duration: 0.4,
-      repeat: Infinity,
-      repeatType: "reverse" as const, 
-      ease: "easeInOut" as const 
+  const loadingDotVariants = {
+    initial: { y: 0 },
+    animate: {
+      y: -8,
+      transition: {
+        duration: 0.4,
+        repeat: Infinity,
+        repeatType: "reverse" as const, 
+        ease: "easeInOut" as const 
+      }
     }
-  }
-};
+  };
 
   return (
     <motion.div 
@@ -226,7 +243,7 @@ const loadingDotVariants = {
             whileFocus={{ scale: 1.01 }}
             value={selectedResume?.resumeId || ""}
             onChange={(e) =>
-              setSelectedResume(resumes.find((r) => r.resumeId === e.target.value))
+              setSelectedResume(resumes.find((r) => r.resumeId === e.target.value) || null)
             }
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
           >
@@ -243,7 +260,8 @@ const loadingDotVariants = {
       <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-white">
         <AnimatePresence mode="popLayout">
           {messages.length === 0 && (
-            <motion.div
+            <motion.div 
+              key="component1" 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -272,10 +290,11 @@ const loadingDotVariants = {
             initial="hidden"
             animate="visible"
             className="space-y-4"
+            key="component2" 
           >
-            {messages.map((msg, i) => (
+            {messages.map((msg, index) => (
               <motion.div
-                key={`${msg.timestamp.getTime()}-${i}`}
+                key={msg.id || index}
                 layout
                 variants={messageVariants}
                 initial="hidden"
@@ -317,6 +336,7 @@ const loadingDotVariants = {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex justify-start mt-4"
+              key="component3"
             >
               <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-3 max-w-[75%] shadow-sm">
                 <div className="flex items-center space-x-2 mb-2">

@@ -63,18 +63,6 @@ export default function EmailLogsPage() {
     }
   };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut"
-      }
-    }
-  };
-
     const statsVariants = {
     hidden: { scale: 0.9, opacity: 0 },
     visible: {
@@ -82,7 +70,7 @@ export default function EmailLogsPage() {
         opacity: 1,
         transition: {
         duration: 0.5,
-        ease: "easeOut" as const // Add 'as const' to fix the type issue
+        ease: "easeOut" as const 
         }
     }
     };

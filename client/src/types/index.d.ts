@@ -2,6 +2,7 @@
 export interface Resume {
   resumeId: string;
   originalName: string;
+  candidateName: string;
   uploadedAt: string;
   email?: string;
   parsedText?: string;

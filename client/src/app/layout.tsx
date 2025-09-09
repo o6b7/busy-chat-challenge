@@ -12,6 +12,8 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  const currentYear = new Date().getFullYear();
+  
   return (
     <html lang="en" className={inter.className}>
       <body className="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
@@ -20,7 +22,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <footer className="bg-gray-900 text-white py-6 mt-auto">
           <div className="container mx-auto px-4 text-center">
             <p className="text-sm text-gray-400">
-              © 2025 Resume Assistant Pro. Built with Next.js and Tailwind CSS.
+              © {currentYear} Resume Assistant Pro. Built with Next.js and Tailwind CSS.
             </p>
           </div>
         </footer>

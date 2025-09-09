@@ -1,11 +1,13 @@
 import Link from "next/link";
 
 export default function Home() {
+  const currentYear = new Date().getFullYear();
+  
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <main className="flex-grow flex flex-col items-center justify-center text-center px-6">
         <h1 className="text-4xl font-bold mb-4 text-gray-800">
-          Welcome to Resume Assistant
+          Welcome to Resume Assistant Pro
         </h1>
         <p className="text-lg text-gray-600 mb-8 max-w-2xl">
           Upload your resume, chat with it, and send professional emails — all
@@ -36,7 +38,7 @@ export default function Home() {
 
       <footer className="bg-gray-900 text-white text-center py-4">
         <p className="text-sm">
-          © {new Date().getFullYear()} Resume Assistant
+          © {currentYear} Resume Assistant Pro
         </p>
       </footer>
     </div>
