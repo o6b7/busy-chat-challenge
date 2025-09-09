@@ -1,3 +1,5 @@
+import { Resume } from "../types";
+
 const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/v1` || "http://localhost:3000/api/v1";
 
 class ApiError extends Error {
@@ -30,8 +32,8 @@ async function handleResponse(res: Response) {
   }
 }
 
-export async function listResumes(): Promise<any[]> {
-  try {
+export async function listResumes(): Promise<Resume[]> {
+    try {
     const response = await fetch(`${BASE_URL}/resume/list`, {
       headers: {
         "Cache-Control": "no-cache",

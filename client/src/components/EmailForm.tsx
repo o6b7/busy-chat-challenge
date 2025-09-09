@@ -72,10 +72,11 @@ export default function EmailForm() {
         setTimeout(() => {
         setStatus({ type: "idle", message: "" });
         }, 3000);
-    } catch (err: any) {
-        console.error("Error while sending/logging email:", err);
-        setStatus({ type: "error", message: `❌ ${err.message || "Failed to send or log email"}` });
-    }
+        } catch (err: unknown) {
+          console.error("Error while sending/logging email:", err);
+          const errorMessage = err instanceof Error ? err.message : "Failed to send or log email";
+          setStatus({ type: "error", message: `❌ ${errorMessage}` });
+        }
   };
 
   // Animation variants

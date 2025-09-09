@@ -12,15 +12,21 @@ import {
   CalendarIcon,
   UserIcon
 } from "@heroicons/react/24/outline";
+import { Resume } from "../../types";
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<{ type: "idle" | "loading" | "success" | "error"; message: string }>({ 
+  interface Status {
+    type: "idle" | "loading" | "success" | "error";
+    message: string;
+  }
+
+  const [status, setStatus] = useState<Status>({ 
     type: "idle", 
     message: "" 
   });
   const [dragOver, setDragOver] = useState(false);
-  const [resumes, setResumes] = useState<any[]>([]);
+  const [resumes, setResumes] = useState<Resume[]>([]);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
 
@@ -145,8 +151,8 @@ export default function UploadPage() {
           </motion.div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Upload Resume</h1>
           <p className="text-gray-600">
-            Upload resumes in <span className="font-semibold text-blue-600">PDF</span> or{" "}
-            <span className="font-semibold text-blue-600">Word (DOCX)</span> format for AI-powered analysis.
+          <span className="font-semibold text-blue-600">PDF</span> or{` `}
+          <span className="font-semibold text-blue-600">Word (DOCX)</span> format for AI-powered analysis.
           </p>
         </motion.div>
 
@@ -434,7 +440,7 @@ export default function UploadPage() {
               </div>
               
               <p className="text-gray-600 mb-6">
-                Are you sure you want to delete the resume "{resumes.find(r => r.resumeId === showDeleteModal)?.originalName}"? 
+                Are you sure you want to delete the resume &quot;{resumes.find(r => r.resumeId === showDeleteModal)?.originalName}&quot;? 
                 This action cannot be undone.
               </p>
               
