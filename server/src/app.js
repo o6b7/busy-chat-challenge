@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { json, urlencoded } from 'express';
 import resumeRoutes from './routes/resumeRoutes.js';
+import emailRoutes from './routes/emailRoutes.js';
 import { notFound, errorHandler } from './middlewares/errorMiddleware.js';
 
 export function createApp() {
@@ -16,6 +17,7 @@ export function createApp() {
   app.use(urlencoded({ extended: true }));
 
   app.use('/api/v1/resume', resumeRoutes);
+  app.use('/api/v1/email', emailRoutes);
 
   app.get('/health', (req, res) => res.json({ ok: true }));
 
