@@ -1,20 +1,9 @@
-import { createEmailTransporter } from "../configs/emailConfig.js";
 import { EmailLog } from "../models/emailModel.js";
 import { logger } from "../configs/loggerConfig.js";
 
 export async function sendEmail(req, res, next) {
   try {
     const { to, subject, body } = req.body;
-
-    const transporter = createEmailTransporter();
-    const mailOptions = {
-      from: `"Resume Assistant" <${process.env.SMTP_USER}>`,
-      to,
-      subject,
-      text: body,
-    };
-
-    await transporter.sendMail(mailOptions);
 
     await EmailLog.create({ to, subject, body, status: "sent" });
 
