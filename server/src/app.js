@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import { json, urlencoded } from 'express';
 import resumeRoutes from './routes/resumeRoutes.js';
 import emailRoutes from './routes/emailRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
 import { notFound, errorHandler } from './middlewares/errorMiddleware.js';
 
 export function createApp() {
@@ -18,6 +19,7 @@ export function createApp() {
 
   app.use('/api/v1/resume', resumeRoutes);
   app.use('/api/v1/email', emailRoutes);
+  app.use('/api/v1/chat', chatRoutes);
 
   app.get('/health', (req, res) => res.json({ ok: true }));
 
