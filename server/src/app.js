@@ -11,7 +11,12 @@ import { notFound, errorHandler } from './middlewares/errorMiddleware.js';
 export function createApp() {
   const app = express();
 
-  app.use(cors());
+  app.use(cors({
+    origin: process.env.NODE_ENV === 'production' 
+      ? 'https://your-frontend-domain.com' 
+      : 'http://localhost:3001',
+    credentials: true
+  }));
   app.use(helmet());
   app.use(morgan('dev'));
   app.use(json({ limit: '5mb' }));
